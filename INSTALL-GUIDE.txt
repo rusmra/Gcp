@@ -1,0 +1,62 @@
+# GCP Manpower Dashboard — PWA Installation Guide
+
+## Files Required (keep all in same folder)
+- gcp-dashboard.html
+- manifest.json
+- sw.js
+- icon-192.png
+- icon-512.png
+
+---
+
+## Option 1: Install via GitHub Pages (Recommended — FREE)
+
+1. Create a free account at https://github.com
+2. Create a new repository (e.g. "gcp-dashboard")
+3. Upload all 5 files to the repository
+4. Go to Settings → Pages → Source: "main branch" → Save
+5. Your app URL: https://YOUR-USERNAME.github.io/gcp-dashboard/gcp-dashboard.html
+6. Open this URL on your Android phone in Chrome
+7. Tap the 3-dot menu → "Add to Home Screen"
+8. ✅ App icon will appear on your home screen!
+
+---
+
+## Option 2: Install via Any Web Server
+
+Upload all 5 files to any web hosting (Netlify, cPanel, etc.)
+Then follow step 6-8 above.
+
+---
+
+## Option 3: Local Network (for office use)
+
+1. Install Python on your PC
+2. Put all files in a folder
+3. Open terminal in that folder and run:
+   python -m http.server 8080
+4. Find your PC's local IP (e.g. 192.168.1.5)
+5. On Android Chrome: open http://192.168.1.5:8080/gcp-dashboard.html
+6. Tap menu → "Add to Home Screen"
+
+---
+
+## Android Chrome Installation Steps (with screenshots guide)
+
+1. Open Chrome on Android
+2. Navigate to your app URL
+3. Wait for the "Add to Home Screen" banner OR
+4. Tap ⋮ (three dots) top right
+5. Tap "Add to Home screen"
+6. Tap "Add"
+7. App appears on home screen with GCP icon
+
+## Features when installed as PWA:
+- ✅ Works OFFLINE (no internet needed after first load)
+- ✅ Full screen (no browser address bar)
+- ✅ Home screen icon
+- ✅ Fast loading
+- ✅ App-like experience
+
+---
+Built for Global Career Pathway | rusmra@gmail.com

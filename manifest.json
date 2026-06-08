@@ -1,0 +1,47 @@
+{
+  "name": "GCP Manpower Dashboard",
+  "short_name": "GCP",
+  "description": "Global Career Pathway — Manpower Business Management",
+  "start_url": "./gcp-dashboard.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d3d1a",
+  "theme_color": "#1a5c2a",
+  "lang": "en",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Worker",
+      "short_name": "Add Worker",
+      "url": "./gcp-dashboard.html#form",
+      "description": "Register a new worker"
+    },
+    {
+      "name": "Worker List",
+      "short_name": "Workers",
+      "url": "./gcp-dashboard.html#list",
+      "description": "View all workers"
+    },
+    {
+      "name": "Accounts",
+      "short_name": "Accounts",
+      "url": "./gcp-dashboard.html#accounts",
+      "description": "View accounts"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

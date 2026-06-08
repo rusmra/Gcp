@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GCP — Manpower Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a5c2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GCP">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Global Career Pathway — Manpower Business Management">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f0f4f1;display:flex;height:100vh;overflow:hidden;font-size:13px}
+:root{--g1:#0d3d1a;--g2:#1a5c2a;--g3:#2d8a45;--gl:#a8d5b0;--bg:#f0f4f1}
+
+/* SIDEBAR */
+#sidebar{width:220px;background:linear-gradient(180deg,#0d3d1a 0%,#1a5c2a 55%,#2d8a45 100%);display:flex;flex-direction:column;transition:width .3s;box-shadow:3px 0 15px rgba(0,0,0,.2);flex-shrink:0;overflow:hidden}
+#sidebar.closed{width:64px}
+.sb-logo{padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.12);display:flex;align-items:center;gap:10}
+.sb-icon{width:36px;height:36px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-name{color:white;font-weight:700;font-size:12px;white-space:nowrap}
+.sb-sub{color:#a8d5b0;font-size:10px;white-space:nowrap}
+nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-item:hover{background:rgba(255,255,255,.08)}
+.nav-item.active{background:rgba(255,255,255,.18);border-left-color:#a8d5b0}
+.nav-item .lbl{color:#c8e6cc;font-size:12.5px}
+.nav-item.active .lbl{color:white}
+.nav-item .ico{font-size:15px;flex-shrink:0}
+.sb-bottom{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12)}
+.sb-sheet{display:flex;align-items:center;gap:10;text-decoration:none}
+.sb-sheet-ico{width:30px;height:30px;border-radius:7px;background:#0f9d58;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+header{background:white;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.07);z-index:10;gap:10px}
+.h-left{display:flex;align-items:center;gap:12px}
+.h-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.toggle-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--g2)}
+.page-title{color:var(--g2);font-weight:700;font-size:15px;white-space:nowrap}
+.search-box{background:#f0f7f1;border:1px solid #c8e6cc;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:5px}
+.search-box input{border:none;background:none;outline:none;font-size:12px;width:150px;font-family:inherit}
+.btn{padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;border:none;font-family:inherit;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn-g{background:var(--g2);color:white}
+.btn-m{background:var(--g3);color:white}
+.btn-o{background:white;color:var(--g2);border:1px solid var(--g2)}
+.btn-r{background:#e74c3c;color:white}
+.btn-b{background:#2980b9;color:white}
+.btn-sm{padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;border:none;font-family:inherit}
+.btn-view{background:#f0f7f1;border:1px solid #c8e6cc;color:var(--g2)}
+.btn-edit{background:#fff8e1;border:1px solid #ffe082;color:#f57f17}
+.btn-del{background:#fdecea;border:1px solid #f5c6cb;color:#c0392b}
+
+#content{flex:1;overflow-y:auto;padding:18px 20px}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:white;border-radius:11px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06);position:relative;overflow:hidden;cursor:default}
+.kpi-ghost{position:absolute;right:12px;top:12px;font-size:26px;opacity:.1}
+.kpi-lbl{font-size:11px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.kpi-val{font-size:24px;font-weight:800}
+.kpi-sub{font-size:10px;color:#27ae60;margin-top:3px}
+
+.card{background:white;border-radius:11px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card-title{font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px}
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:120px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bar{width:100%;border-radius:3px 3px 0 0;transition:height .3s}
+.bar-lbl{font-size:9px;color:#999}
+.dest-item{margin-bottom:10px}
+.dest-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.dest-cnt{font-weight:700;color:var(--g2)}
+.prog-track{background:#eee;border-radius:4px;height:5px}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--g2),var(--g3))}
+
+/* TABLE */
+.table-card{background:white;border-radius:11px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.tbl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:7px 9px;font-size:11px;color:#888;font-weight:600;border-bottom:2px solid #f0f7f1;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+td{padding:9px;font-size:12px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+tr:hover td{background:#f9fdf9}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.bg{background:#d4edda;color:#155724}
+.by{background:#fff3cd;color:#856404}
+.br{background:#f8d7da;color:#721c24}
+.bb{background:#cce5ff;color:#004085}
+.bgr{background:#f0f0f0;color:#555}
+.worker-name{display:flex;align-items:center;gap:7px;font-weight:600;color:#222;white-space:nowrap}
+.avatar{width:26px;height:26px;border-radius:50%;background:#d4edda;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.act-btns{display:flex;gap:3px}
+.empty-row{text-align:center;padding:28px;color:#aaa;font-size:13px}
+select.filter-sel{padding:5px 10px;border-radius:7px;font-size:12px;border:1px solid #ddd;font-family:inherit;outline:none;background:white}
+
+/* FORM */
+.form-wrap{max-width:800px;margin:0 auto}
+.form-card{background:white;border-radius:13px;padding:24px 28px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.form-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #a8d5b0}
+.fh-icon{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+label{display:block;font-size:11px;color:#555;font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+input[type=text],input[type=date],input[type=number],input[type=email],select,textarea{width:100%;padding:9px 11px;border:1px solid #dde;border-radius:7px;font-size:13px;font-family:inherit;outline:none;background:#fafafa;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--g3);background:white}
+textarea{resize:vertical}
+.form-actions{display:flex;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid #eee}
+.save-btn{flex:1;padding:11px;background:linear-gradient(135deg,var(--g2),var(--g3));color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.save-btn:disabled{opacity:.7;cursor:wait}
+.cancel-btn{padding:11px 20px;background:#f0f0f0;color:#555;border:none;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+.ok-badge{margin-left:auto;background:#d4edda;color:#155724;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600}
+
+/* FILE UPLOAD */
+.upload-zone{border:2px dashed #a8d5b0;border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:#f9fdf9;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--g2);background:#f0f7f1}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone-icon{font-size:30px;margin-bottom:8px}
+.upload-zone-text{color:#555;font-size:13px;font-weight:500}
+.upload-zone-sub{color:#999;font-size:11px;margin-top:4px}
+.file-list{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.file-item{display:flex;align-items:center;gap:10px;background:#f5f9f5;border:1px solid #c8e6cc;border-radius:8px;padding:7px 12px}
+.file-item-icon{font-size:18px;flex-shrink:0}
+.file-item-name{flex:1;font-size:12px;color:#333;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-item-size{font-size:11px;color:#888;flex-shrink:0}
+.file-item-del{background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;flex-shrink:0}
+
+/* ACCOUNTS */
+.acc-tabs{display:flex;gap:0;margin-bottom:16px;background:white;border-radius:10px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.06);width:fit-content;flex-wrap:wrap}
+.acc-tab{padding:7px 15px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;background:none;font-weight:600;color:#888;transition:all .2s;white-space:nowrap}
+.acc-tab.active{background:var(--g2);color:white}
+.acc-section{display:none}.acc-section.active{display:block}
+.exp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.exp-card{background:white;border-radius:11px;padding:15px 17px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid var(--g2)}
+.exp-card.red{border-left-color:#e74c3c}.exp-card.blue{border-left-color:#2980b9}
+.exp-card.orange{border-left-color:#e67e22}.exp-card.purple{border-left-color:#8e44ad}
+.exp-lbl{font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+.exp-val{font-size:19px;font-weight:800;color:var(--g2)}
+.exp-card.red .exp-val{color:#c0392b}.exp-card.blue .exp-val{color:#1a5276}
+.exp-card.orange .exp-val{color:#d35400}.exp-card.purple .exp-val{color:#6c3483}
+.acc-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.acc-form-full{grid-column:1/-1}
+.ledger-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #f0f0f0}
+.ledger-row:hover{background:#f9fdf9}
+.ledger-type{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ledger-income{background:#d4edda}.ledger-expense{background:#f8d7da}
+.ledger-desc{flex:1;color:#333;font-weight:500}
+.ledger-cat{font-size:10px;color:#888;margin-top:1px}
+.ledger-date{color:#999;font-size:11px;flex-shrink:0}
+.ledger-amount{font-weight:700;flex-shrink:0;min-width:90px;text-align:right}
+.ledger-amount.inc{color:#155724}.ledger-amount.exp{color:#721c24}
+
+/* EMPLOYEE */
+.emp-card{display:flex;align-items:center;gap:12px;background:white;border-radius:10px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:9px}
+.emp-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;color:white}
+.emp-info{flex:1}
+.emp-name{font-weight:700;font-size:13px;color:#222}
+.emp-role{font-size:11px;color:#888}
+
+/* FLIGHT */
+.flight-card{background:white;border-radius:11px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:10px;border-left:4px solid var(--g3)}
+.flight-card.departed{border-left-color:#27ae60}
+.flight-card.scheduled{border-left-color:#2980b9}
+.flight-card.cancelled{border-left-color:#e74c3c}
+.flight-card.pending{border-left-color:#f39c12}
+.flight-route{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.flight-city{font-weight:700;font-size:14px;color:#222}
+.flight-arrow{color:#888;font-size:16px}
+.flight-meta{display:flex;gap:16px;font-size:11px;color:#888;flex-wrap:wrap}
+.flight-meta span{display:flex;align-items:center;gap:4px}
+
+/* REPORT */
+.report-card{background:white;border-radius:11px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow .2s}
+.report-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.report-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.report-info{flex:1}
+.report-title{font-weight:700;color:#222;font-size:13px;margin-bottom:3px}
+.report-desc{font-size:11px;color:#888}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal-box{background:white;border-radius:14px;padding:24px;width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.detail-item{background:#f9fdf9;border-radius:7px;padding:9px 12px}
+.detail-lbl{font-size:10px;color:#888;margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px}
+.detail-val{font-size:13px;font-weight:600;color:#222}
+
+/* PRINT REPORT */
+@media print{
+  #sidebar,header,.no-print{display:none!important}
+  body{overflow:visible;height:auto}
+  #main{overflow:visible}
+  #content{overflow:visible;padding:0}
+  .page{display:block!important}
+  .page:not(.active){display:none!important}
+  .print-report{page-break-after:always}
+}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#f0f0f0}
+::-webkit-scrollbar-thumb{background:#a8d5b0;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-icon">🌐</div>
+    <div class="sb-txt">
+      <div class="sb-name">Global Career Pathway</div>
+      <div class="sb-sub">rusmra@gmail.com</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="ico">📊</span><span class="lbl">Dashboard</span></div>
+    <div class="nav-item" onclick="showPage('form',this)"><span class="ico">➕</span><span class="lbl">New Worker</span></div>
+    <div class="nav-item" onclick="showPage('list',this)"><span class="ico">🛂</span><span class="lbl">Worker List</span></div>
+    <div class="nav-item" onclick="showPage('upload',this)"><span class="ico">📁</span><span class="lbl">File Upload</span></div>
+    <div class="nav-item" onclick="showPage('flights',this)"><span class="ico">✈️</span><span class="lbl">Flights</span></div>
+    <div class="nav-item" onclick="showPage('accounts',this)"><span class="ico">🧾</span><span class="lbl">Accounts</span></div>
+    <div class="nav-item" onclick="showPage('employee',this)"><span class="ico">👥</span><span class="lbl">Employees</span></div>
+    <div class="nav-item" onclick="showPage('reports',this)"><span class="ico">📑</span><span class="lbl">Reports</span></div>
+    <div class="nav-item" onclick="showPage('coming',this)"><span class="ico">👤</span><span class="lbl">Agents</span></div>
+  </nav>
+  <div class="sb-bottom">
+    <a class="sb-sheet" href="https://docs.google.com/spreadsheets/d/1MZcVT8OFE2HEzIZyQQe_fVZigAKViAwpH9QG6Yw60bw/edit" target="_blank">
+      <div class="sb-sheet-ico">📊</div>
+      <div class="sb-txt">
+        <div class="sb-name">Google Sheets</div>
+        <div class="sb-sub">Live Data ↗</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <header>
+    <div class="h-left">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <span class="page-title" id="pageTitle">Dashboard</span>
+    </div>
+    <div class="h-right">
+      <div class="search-box">
+        <span>🔍</span>
+        <input id="searchInput" placeholder="Search workers..." oninput="applySearch()">
+      </div>
+      <button id="installBtn" onclick="installApp()" class="btn no-print" style="display:none;background:linear-gradient(135deg,#1a5c2a,#2d8a45);color:white;gap:5px">📲 Install App</button>
+      <a href="https://docs.google.com/spreadsheets/d/1MZcVT8OFE2HEzIZyQQe_fVZigAKViAwpH9QG6Yw60bw/edit" target="_blank" class="btn btn-g no-print">📊 Sheets</a>
+      <button class="btn btn-m no-print" onclick="openForm()">➕ New Worker</button>
+    </div>
+  </header>
+
+  <div id="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="chart-row">
+        <div class="card"><div class="card-title">Monthly Worker Overview</div><div class="bar-chart" id="barChart"></div></div>
+        <div class="card"><div class="card-title">Workers by Destination</div><div id="destChart"></div></div>
+      </div>
+      <div class="table-card">
+        <div class="tbl-hdr">
+          <div style="font-weight:700;color:var(--g2);font-size:13px">Recent Workers</div>
+          <button class="btn btn-o" style="font-size:11px;padding:4px 10px" onclick="showPage('list')">View All →</button>
+        </div>
+        <div id="recentTable"></div>
+      </div>
+    </div>
+
+    <!-- ═══ WORKER FORM ═══ -->
+    <div class="page" id="page-form">
+      <div class="form-wrap">
+        <div class="form-card">
+          <div class="form-head">
+            <div class="fh-icon">🛂</div>
+            <div>
+              <div style="font-weight:800;font-size:17px;color:var(--g2)" id="formTitle">Register New Worker</div>
+              <div style="font-size:11px;color:#888">Fill in details — will sync to Google Sheets</div>
+            </div>
+            <span id="savedBadge" class="ok-badge" style="display:none">✅ Saved!</span>
+          </div>
+          <div class="form-grid">
+            <div><label>Full Name *</label><input type="text" id="f-name" placeholder="e.g. Mohammad Rafiq"></div>
+            <div><label>Passport Number *</label><input type="text" id="f-passport" placeholder="e.g. AB1234567"></div>
+            <div><label>Phone Number</label><input type="text" id="f-phone" placeholder="017XXXXXXXX"></div>
+            <div><label>Flight Date</label><input type="date" id="f-flight"></div>
+            <div><label>Destination</label>
+              <select id="f-dest"><option value="">-- Select --</option>
+                <option>Saudi Arabia</option><option>Singapore</option><option>Malaysia</option>
+                <option>Qatar</option><option>Oman</option><option>Dubai</option><option>Bahrain</option><option>Kuwait</option>
+              </select>
+            </div>
+            <div><label>Agent</label>
+              <select id="f-agent"><option value="">-- Select --</option>
+                <option>Dhaka Agent 1</option><option>Sylhet Agent 2</option>
+                <option>Chittagong Agent 3</option><option>Moulvibazar Agent</option>
+              </select>
+            </div>
+            <div><label>Company Name</label><input type="text" id="f-company" placeholder="e.g. Al Rajhi Group, Port Authority"></div>
+            <div><label>Post / Position</label><input type="text" id="f-post" placeholder="e.g. Driver, Cleaner, Security Guard"></div>
+            <div><label>Visa Status</label>
+              <select id="f-visa"><option value="">-- Select --</option>
+                <option>Approved</option><option>Processing</option><option>Pending</option><option>Rejected</option>
+              </select>
+            </div>
+            <div><label>Medical Status</label>
+              <select id="f-med"><option value="">-- Select --</option>
+                <option>Completed</option><option>Pending</option><option>Unfit</option>
+              </select>
+            </div>
+            <div class="form-full"><label>Address</label><input type="text" id="f-addr" placeholder="Current address"></div>
+            <div class="form-full"><label>Notes</label><textarea id="f-note" rows="3" placeholder="Additional information..."></textarea></div>
+            <div class="form-full">
+              <label>Attach Documents</label>
+              <div class="upload-zone">
+                <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="handleFormFiles(event)">
+                <div class="upload-zone-icon">📎</div>
+                <div class="upload-zone-text">Attach passport copy, visa, medical report</div>
+                <div class="upload-zone-sub">PDF, JPG, PNG, DOC supported</div>
+              </div>
+              <div class="file-list" id="formFileList"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="save-btn" id="saveBtn" onclick="saveWorker()">💾 Save & Sync to Google Sheets</button>
+            <button class="cancel-btn" onclick="cancelForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ WORKER LIST ═══ -->
+    <div class="page" id="page-list">
+      <div class="table-card">
+        <div class="tbl-hdr">
+          <div style="font-weight:700;color:var(--g2);font-size:14px" id="listCount"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="filter-sel" id="destFilter" onchange="renderList()">
+              <option value="">All Destinations</option>
+              <option>Saudi Arabia</option><option>Singapore</option><option>Malaysia</option>
+              <option>Qatar</option><option>Oman</option><option>Dubai</option>
+            </select>
+            <select class="filter-sel" id="visaFilter" onchange="renderList()">
+              <option value="">All Visa Status</option>
+              <option>Approved</option><option>Processing</option><option>Pending</option><option>Rejected</option>
+            </select>
+            <button class="btn btn-m" onclick="openForm()">➕ Add New</button>
+          </div>
+        </div>
+        <div id="fullTable"></div>
+      </div>
+    </div>
+
+    <!-- ═══ FILE UPLOAD ═══ -->
+    <div class="page" id="page-upload">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-card">
+          <div class="form-head" style="margin-bottom:18px;padding-bottom:12px">
+            <div class="fh-icon">📁</div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--g2)">File Upload</div>
+              <div style="font-size:11px;color:#888">Upload documents, reports, images</div>
+            </div>
+          </div>
+          <div style="margin-bottom:13px"><label>File Category</label>
+            <select id="uploadCat">
+              <option value="passport">🛂 Passport</option><option value="visa">🏷️ Visa Document</option>
+              <option value="medical">🏥 Medical Report</option><option value="contract">📝 Contract</option>
+              <option value="invoice">🧾 Invoice / Receipt</option><option value="salary">💰 Salary Sheet</option>
+              <option value="flight">✈️ Flight Ticket</option><option value="other">📂 Other</option>
+            </select>
+          </div>
+          <div style="margin-bottom:13px"><label>Related Worker (Optional)</label>
+            <select id="uploadWorker"><option value="">-- General File --</option></select>
+          </div>
+          <div style="margin-bottom:13px"><label>Note</label>
+            <input type="text" id="uploadNote" placeholder="Brief description of file...">
+          </div>
+          <div class="upload-zone" id="mainUploadZone">
+            <input type="file" multiple id="mainFileInput" onchange="handleMainFiles(event)">
+            <div class="upload-zone-icon">📤</div>
+            <div class="upload-zone-text">Drag & drop files here or click to browse</div>
+            <div class="upload-zone-sub">PDF, JPG, PNG, DOC, DOCX, XLSX • Max 10 MB</div>
+          </div>
+          <div class="file-list" id="mainFileList"></div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="uploadFiles()">☁️ Upload Files</button>
+            <button class="cancel-btn" onclick="clearUpload()">Clear</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="tbl-hdr">
+            <div style="font-weight:700;color:var(--g2);font-size:13px">File Library</div>
+            <select class="filter-sel" id="fileFilter" onchange="renderFiles()">
+              <option value="">All Files</option>
+              <option value="passport">Passport</option><option value="visa">Visa</option>
+              <option value="medical">Medical</option><option value="invoice">Invoice</option>
+              <option value="salary">Salary</option><option value="flight">Flight</option><option value="other">Other</option>
+            </select>
+          </div>
+          <div id="fileLibrary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FLIGHTS ═══ -->
+    <div class="page" id="page-flights">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <!-- Add Flight Form -->
+        <div class="form-card">
+          <div class="form-head" style="margin-bottom:18px;padding-bottom:12px">
+            <div class="fh-icon">✈️</div>
+            <div>
+              <div style="font-weight:800;font-size:16px;color:var(--g2)" id="flightFormTitle">Add New Flight</div>
+              <div style="font-size:11px;color:#888">Schedule and track worker flights</div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div><label>Worker Name *</label>
+              <select id="fl-worker"><option value="">-- Select Worker --</option></select>
+            </div>
+            <div><label>Flight Number *</label><input type="text" id="fl-number" placeholder="e.g. SV-812"></div>
+            <div><label>Origin</label><input type="text" id="fl-origin" placeholder="e.g. Dhaka (DAC)"></div>
+            <div><label>Destination</label>
+              <select id="fl-dest"><option value="">-- Select --</option>
+                <option>Riyadh (RUH)</option><option>Jeddah (JED)</option><option>Singapore (SIN)</option>
+                <option>Kuala Lumpur (KUL)</option><option>Doha (DOH)</option><option>Dubai (DXB)</option>
+                <option>Muscat (MCT)</option><option>Kuwait (KWI)</option>
+              </select>
+            </div>
+            <div><label>Departure Date</label><input type="date" id="fl-date"></div>
+            <div><label>Departure Time</label><input type="text" id="fl-time" placeholder="e.g. 14:30"></div>
+            <div><label>Airline</label>
+              <select id="fl-airline"><option value="">-- Select --</option>
+                <option>Biman Bangladesh</option><option>Saudi Airlines</option><option>Singapore Airlines</option>
+                <option>Air Arabia</option><option>Emirates</option><option>Qatar Airways</option>
+                <option>Malaysia Airlines</option><option>Oman Air</option>
+              </select>
+            </div>
+            <div><label>Ticket Price (BDT)</label><input type="number" id="fl-price" placeholder="0"></div>
+            <div><label>Seat Number</label><input type="text" id="fl-seat" placeholder="e.g. 24A"></div>
+            <div><label>Status</label>
+              <select id="fl-status">
+                <option>Scheduled</option><option>Boarded</option><option>Departed</option>
+                <option>Arrived</option><option>Cancelled</option><option>Delayed</option>
+              </select>
+            </div>
+            <div class="form-full"><label>Notes</label><input type="text" id="fl-note" placeholder="Additional notes..."></div>
+          </div>
+          <div class="form-actions" style="margin-top:16px;padding-top:14px">
+            <button class="save-btn" id="flightSaveBtn" onclick="saveFlight()">✈️ Save Flight</button>
+            <button class="cancel-btn" onclick="clearFlightForm()">Clear</button>
+          </div>
+        </div>
+
+        <!-- Flight List -->
+        <div>
+          <div class="tbl-hdr" style="margin-bottom:12px">
+            <div style="font-weight:700;color:var(--g2);font-size:14px">Flight Schedule (<span id="flightCount">0</span>)</div>
+            <select class="filter-sel" id="flightFilter" onchange="renderFlights()">
+              <option value="">All Status</option>
+              <option>Scheduled</option><option>Departed</option><option>Arrived</option><option>Cancelled</option><option>Delayed</option>
+            </select>
+          </div>
+          <div id="flightList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ACCOUNTS ═══ -->
+    <div class="page" id="page-accounts">
+      <div class="exp-grid" id="accSummary"></div>
+      <div class="acc-tabs">
+        <button class="acc-tab active" onclick="accTab('income',this)">💰 Income</button>
+        <button class="acc-tab" onclick="accTab('expense',this)">💸 Expense</button>
+        <button class="acc-tab" onclick="accTab('salary',this)">👔 Salary</button>
+        <button class="acc-tab" onclick="accTab('rent',this)">🏢 Office Rent</button>
+        <button class="acc-tab" onclick="accTab('tada',this)">✈️ TA / DA</button>
+        <button class="acc-tab" onclick="accTab('ledger',this)">📒 Ledger</button>
+      </div>
+
+      <!-- INCOME -->
+      <div class="acc-section active" id="acc-income">
+        <div class="form-card">
+          <div style="font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px">➕ New Income Entry</div>
+          <div class="acc-form-grid">
+            <div><label>Income Type</label>
+              <select id="inc-type"><option>Visa Fee</option><option>Service Charge</option><option>Agent Commission</option><option>Medical Fee</option><option>Document Fee</option><option>Other</option></select>
+            </div>
+            <div><label>Amount (BDT)</label><input type="number" id="inc-amount" placeholder="0"></div>
+            <div><label>Date</label><input type="date" id="inc-date"></div>
+            <div><label>Worker (Optional)</label><select id="inc-worker"><option value="">-- General --</option></select></div>
+            <div><label>Reference No.</label><input type="text" id="inc-ref" placeholder="INV-001"></div>
+            <div class="acc-form-full"><label>Description</label><input type="text" id="inc-desc" placeholder="Income description..."></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="addEntry('income')">✅ Add Income</button>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:12px">
+          <div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:13px">Income Records</div></div>
+          <div id="incomeList"></div>
+        </div>
+      </div>
+
+      <!-- EXPENSE -->
+      <div class="acc-section" id="acc-expense">
+        <div class="form-card">
+          <div style="font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px">➕ New Expense Entry</div>
+          <div class="acc-form-grid">
+            <div><label>Expense Type</label>
+              <select id="exp-type"><option>Office Rent</option><option>Electricity</option><option>Internet</option><option>Stationery</option><option>Communication</option><option>Maintenance</option><option>Other</option></select>
+            </div>
+            <div><label>Amount (BDT)</label><input type="number" id="exp-amount" placeholder="0"></div>
+            <div><label>Date</label><input type="date" id="exp-date"></div>
+            <div><label>Payment Method</label>
+              <select id="exp-pay"><option>Cash</option><option>Bank Transfer</option><option>bKash</option><option>Cheque</option></select>
+            </div>
+            <div><label>Voucher No.</label><input type="text" id="exp-voucher" placeholder="VCH-001"></div>
+            <div class="acc-form-full"><label>Description</label><input type="text" id="exp-desc" placeholder="Expense description..."></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="addEntry('expense')">✅ Add Expense</button>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:12px">
+          <div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:13px">Expense Records</div></div>
+          <div id="expenseList"></div>
+        </div>
+      </div>
+
+      <!-- SALARY -->
+      <div class="acc-section" id="acc-salary">
+        <div class="form-card">
+          <div style="font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px">👔 Process Salary Payment</div>
+          <div class="acc-form-grid">
+            <div><label>Employee</label><select id="sal-emp"><option value="">-- Select Employee --</option></select></div>
+            <div><label>Month</label>
+              <select id="sal-month"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+            </div>
+            <div><label>Year</label><input type="number" id="sal-year" value="2025"></div>
+            <div><label>Basic Salary (BDT)</label><input type="number" id="sal-basic" placeholder="0" oninput="calcSalary()"></div>
+            <div><label>Bonus / Allowance (BDT)</label><input type="number" id="sal-bonus" placeholder="0" oninput="calcSalary()"></div>
+            <div><label>Deduction (BDT)</label><input type="number" id="sal-deduct" placeholder="0" oninput="calcSalary()"></div>
+            <div><label>Net Salary</label><input type="number" id="sal-net" readonly style="background:#f0f7f1;font-weight:700;color:var(--g2)"></div>
+            <div><label>Payment Date</label><input type="date" id="sal-date"></div>
+            <div><label>Payment Method</label>
+              <select id="sal-pay"><option>Bank Transfer</option><option>Cash</option><option>bKash</option></select>
+            </div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="addEntry('salary')">✅ Process Salary</button>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:12px">
+          <div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:13px">Salary History</div></div>
+          <div id="salaryList"></div>
+        </div>
+      </div>
+
+      <!-- OFFICE RENT -->
+      <div class="acc-section" id="acc-rent">
+        <div class="form-card">
+          <div style="font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px">🏢 Office Rent Payment</div>
+          <div class="acc-form-grid">
+            <div><label>Office Branch</label>
+              <select id="rent-office"><option>Moulvibazar Office</option><option>Dhaka Baridhara Office</option><option>Other</option></select>
+            </div>
+            <div><label>Rent Amount (BDT)</label><input type="number" id="rent-amount" placeholder="0"></div>
+            <div><label>Month</label>
+              <select id="rent-month"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+            </div>
+            <div><label>Payment Date</label><input type="date" id="rent-date"></div>
+            <div><label>Landlord Name</label><input type="text" id="rent-owner" placeholder="Landlord name"></div>
+            <div><label>Receipt No.</label><input type="text" id="rent-receipt" placeholder="RNT-001"></div>
+            <div class="acc-form-full"><label>Notes</label><input type="text" id="rent-note" placeholder="Additional notes..."></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="addEntry('rent')">✅ Add Rent Payment</button>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:12px">
+          <div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:13px">Rent History</div></div>
+          <div id="rentList"></div>
+        </div>
+      </div>
+
+      <!-- TA/DA -->
+      <div class="acc-section" id="acc-tada">
+        <div class="form-card">
+          <div style="font-weight:700;color:var(--g2);font-size:13px;margin-bottom:14px">✈️ Travel Allowance (TA / DA)</div>
+          <div class="acc-form-grid">
+            <div><label>Employee</label><select id="ta-emp"><option value="">-- Select Employee --</option></select></div>
+            <div><label>Purpose of Travel</label><input type="text" id="ta-purpose" placeholder="e.g. Client Visit / Agent Meeting"></div>
+            <div><label>Departure Date</label><input type="date" id="ta-from"></div>
+            <div><label>Return Date</label><input type="date" id="ta-to"></div>
+            <div><label>Route</label><input type="text" id="ta-dest" placeholder="e.g. Dhaka → Sylhet"></div>
+            <div><label>Transport Cost (BDT)</label><input type="number" id="ta-travel" placeholder="0" oninput="calcTA()"></div>
+            <div><label>Daily Allowance (BDT)</label><input type="number" id="ta-da" placeholder="0" oninput="calcTA()"></div>
+            <div><label>Accommodation (BDT)</label><input type="number" id="ta-hotel" placeholder="0" oninput="calcTA()"></div>
+            <div><label>Other Expenses (BDT)</label><input type="number" id="ta-other" placeholder="0" oninput="calcTA()"></div>
+            <div><label>Total TA/DA</label><input type="number" id="ta-total" readonly style="background:#f0f7f1;font-weight:700;color:var(--g2)"></div>
+            <div><label>Approved By</label><input type="text" id="ta-approver" placeholder="Name / Designation"></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" onclick="addEntry('tada')">✅ Add TA/DA</button>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:12px">
+          <div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:13px">TA/DA History</div></div>
+          <div id="tadaList"></div>
+        </div>
+      </div>
+
+      <!-- LEDGER -->
+      <div class="acc-section" id="acc-ledger">
+        <div class="table-card">
+          <div class="tbl-hdr">
+            <div style="font-weight:700;color:var(--g2);font-size:14px">📒 Full Ledger</div>
+            <div style="display:flex;gap:8px">
+              <select class="filter-sel" id="ledgerFilter" onchange="renderLedger()">
+                <option value="">All Entries</option>
+                <option value="income">Income</option><option value="expense">Expense</option>
+                <option value="salary">Salary</option><option value="rent">Rent</option><option value="tada">TA/DA</option>
+              </select>
+            </div>
+          </div>
+          <div id="ledgerTable"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EMPLOYEE ═══ -->
+    <div class="page" id="page-employee">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-card">
+          <div class="form-head" style="margin-bottom:16px;padding-bottom:12px">
+            <div class="fh-icon">👥</div>
+            <div>
+              <div style="font-weight:800;font-size:15px;color:var(--g2)" id="empFormTitle">Add New Employee</div>
+              <div style="font-size:11px;color:#888">Manage staff records</div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div><label>Full Name *</label><input type="text" id="emp-name" placeholder="Full Name"></div>
+            <div><label>Designation *</label><input type="text" id="emp-role" placeholder="e.g. Manager / Officer"></div>
+            <div><label>Phone</label><input type="text" id="emp-phone" placeholder="017XXXXXXXX"></div>
+            <div><label>Email</label><input type="email" id="emp-email" placeholder="name@email.com"></div>
+            <div><label>Basic Salary (BDT)</label><input type="number" id="emp-salary" placeholder="0"></div>
+            <div><label>Join Date</label><input type="date" id="emp-join"></div>
+            <div><label>Department</label>
+              <select id="emp-dept"><option>Visa Processing</option><option>Accounts</option><option>HR</option><option>Marketing</option><option>IT</option><option>Admin</option></select>
+            </div>
+            <div><label>Status</label>
+              <select id="emp-status"><option>Active</option><option>On Leave</option><option>Terminated</option></select>
+            </div>
+            <div class="form-full"><label>Address</label><input type="text" id="emp-addr" placeholder="Address"></div>
+          </div>
+          <div class="form-actions" style="margin-top:14px;padding-top:12px">
+            <button class="save-btn" id="empSaveBtn" onclick="saveEmployee()">💾 Save Employee</button>
+            <button class="cancel-btn" onclick="clearEmpForm()">Clear</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:700;color:var(--g2);font-size:14px;margin-bottom:12px">Staff List (<span id="empCount">0</span>)</div>
+          <div id="empList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REPORTS ═══ -->
+    <div class="page" id="page-reports">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-weight:700;color:var(--g2);font-size:15px">📑 Report Generator</div>
+        <div style="display:flex;gap:8px">
+          <select class="filter-sel" id="reportMonth">
+            <option value="">All Months</option>
+            <option>January</option><option>February</option><option>March</option><option>April</option>
+            <option>May</option><option>June</option><option>July</option><option>August</option>
+            <option>September</option><option>October</option><option>November</option><option>December</option>
+          </select>
+          <select class="filter-sel" id="reportYear"><option>2025</option><option>2026</option></select>
+        </div>
+      </div>
+
+      <div class="report-grid">
+        <div class="report-card" onclick="generateReport('workers')">
+          <div class="report-icon" style="background:#e8f5e9">📋</div>
+          <div class="report-info">
+            <div class="report-title">Worker Summary Report</div>
+            <div class="report-desc">All workers with visa, medical & flight status</div>
+          </div>
+          <button class="btn btn-g">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('flights')">
+          <div class="report-icon" style="background:#e3f2fd">✈️</div>
+          <div class="report-info">
+            <div class="report-title">Flight Schedule Report</div>
+            <div class="report-desc">All scheduled and completed flights</div>
+          </div>
+          <button class="btn btn-b">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('income')">
+          <div class="report-icon" style="background:#e8f5e9">💰</div>
+          <div class="report-info">
+            <div class="report-title">Income & Revenue Report</div>
+            <div class="report-desc">Detailed income breakdown by type and worker</div>
+          </div>
+          <button class="btn btn-g">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('expense')">
+          <div class="report-icon" style="background:#fdecea">💸</div>
+          <div class="report-info">
+            <div class="report-title">Expense Report</div>
+            <div class="report-desc">Office expenses, rent, utilities breakdown</div>
+          </div>
+          <button class="btn btn-r">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('salary')">
+          <div class="report-icon" style="background:#fff8e1">👔</div>
+          <div class="report-info">
+            <div class="report-title">Salary Disbursement Report</div>
+            <div class="report-desc">Employee salary payments for selected period</div>
+          </div>
+          <button class="btn btn-edit" style="color:white;background:#f57f17;border:none">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('tada')">
+          <div class="report-icon" style="background:#f3e5f5">✈️</div>
+          <div class="report-info">
+            <div class="report-title">TA/DA Expense Report</div>
+            <div class="report-desc">Travel & daily allowance for all employees</div>
+          </div>
+          <button class="btn" style="background:#8e44ad;color:white">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('pnl')">
+          <div class="report-icon" style="background:#e0f7fa">📊</div>
+          <div class="report-info">
+            <div class="report-title">Profit & Loss Statement</div>
+            <div class="report-desc">Full P&L with income vs all expenditures</div>
+          </div>
+          <button class="btn" style="background:#0097a7;color:white">Generate</button>
+        </div>
+        <div class="report-card" onclick="generateReport('destination')">
+          <div class="report-icon" style="background:#fce4ec">🌍</div>
+          <div class="report-info">
+            <div class="report-title">Destination-wise Report</div>
+            <div class="report-desc">Workers grouped by destination country</div>
+          </div>
+          <button class="btn" style="background:#c2185b;color:white">Generate</button>
+        </div>
+      </div>
+
+      <!-- Report Output -->
+      <div id="reportOutput" style="display:none;margin-top:16px">
+        <div class="table-card" id="reportContent"></div>
+      </div>
+    </div>
+
+    <!-- ═══ COMING SOON ═══ -->
+    <div class="page" id="page-coming">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#aaa;gap:12px">
+        <div style="font-size:52px">🚧</div>
+        <div style="font-size:16px">Coming Soon</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div style="font-weight:800;color:var(--g2);font-size:15px" id="modalTitle">Worker Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───
+const SHEET_ID = "1MZcVT8OFE2HEzIZyQQe_fVZigAKViAwpH9QG6Yw60bw";
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const flags = {"Saudi Arabia":"🇸🇦","Singapore":"🇸🇬","Malaysia":"🇲🇾","Qatar":"🇶🇦","Oman":"🇴🇲","Dubai":"🇦🇪","Bahrain":"🇧🇭","Kuwait":"🇰🇼"};
+
+let workers = [
+  {name:"Mohammad Rafiq",passport:"AB1234567",destination:"Saudi Arabia",agent:"Dhaka Agent 1",visaStatus:"Approved",medStatus:"Completed",flightDate:"2025-06-10",phone:"01711000001",address:"Dhaka",note:"",files:[]},
+  {name:"Abul Kalam",passport:"BC2345678",destination:"Singapore",agent:"Sylhet Agent 2",visaStatus:"Processing",medStatus:"Pending",flightDate:"2025-06-15",phone:"01711000002",address:"Sylhet",note:"",files:[]},
+  {name:"Noor Islam",passport:"CD3456789",destination:"Saudi Arabia",agent:"Moulvibazar Agent",visaStatus:"Approved",medStatus:"Completed",flightDate:"2025-06-08",phone:"01711000003",address:"Moulvibazar",note:"",files:[]},
+  {name:"Jasim Uddin",passport:"DE4567890",destination:"Malaysia",agent:"Chittagong Agent 3",visaStatus:"Pending",medStatus:"Pending",flightDate:"2025-06-20",phone:"01711000004",address:"Chittagong",note:"",files:[]},
+  {name:"Shafiqul Islam",passport:"EF5678901",destination:"Singapore",agent:"Dhaka Agent 1",visaStatus:"Approved",medStatus:"Completed",flightDate:"2025-06-12",phone:"01711000005",address:"Dhaka",note:"",files:[]},
+  {name:"Mizanur Rahman",passport:"FG6789012",destination:"Saudi Arabia",agent:"Sylhet Agent 2",visaStatus:"Processing",medStatus:"Pending",flightDate:"2025-06-25",phone:"01711000006",address:"Sylhet",note:"",files:[]},
+];
+
+let employees = [
+  {name:"Karim Saheb",role:"Senior Manager",phone:"01712248121",email:"karim@gcp.com",salary:35000,join:"2022-01-01",dept:"Visa Processing",status:"Active",address:"Moulvibazar"},
+  {name:"Rahela Begum",role:"Accounts Officer",phone:"01712248122",email:"rahela@gcp.com",salary:22000,join:"2023-03-15",dept:"Accounts",status:"Active",address:"Dhaka"},
+  {name:"Tanvir Hossain",role:"Visa Processor",phone:"01712248123",email:"tanvir@gcp.com",salary:18000,join:"2023-07-01",dept:"Visa Processing",status:"Active",address:"Sylhet"},
+];
+
+let flights = [
+  {worker:"Mohammad Rafiq",number:"SV-812",origin:"Dhaka (DAC)",destination:"Riyadh (RUH)",date:"2025-06-10",time:"14:30",airline:"Saudi Airlines",price:45000,seat:"24A",status:"Scheduled",note:""},
+  {worker:"Noor Islam",number:"BG-022",origin:"Dhaka (DAC)",destination:"Jeddah (JED)",date:"2025-06-08",time:"09:15",airline:"Biman Bangladesh",price:38000,seat:"12C",status:"Departed",note:""},
+  {worker:"Shafiqul Islam",number:"SQ-447",origin:"Dhaka (DAC)",destination:"Singapore (SIN)",date:"2025-06-12",time:"22:45",airline:"Singapore Airlines",price:52000,seat:"31F",status:"Scheduled",note:""},
+];
+
+let accEntries = [
+  {type:"income",cat:"Service Charge",desc:"Rafiq visa processing fee",amount:45000,date:"2025-06-01",ref:"INV-001",worker:"Mohammad Rafiq"},
+  {type:"income",cat:"Visa Fee",desc:"Kalam processing",amount:38000,date:"2025-06-03",ref:"INV-002",worker:"Abul Kalam"},
+  {type:"expense",cat:"Office Rent",desc:"Moulvibazar office June",amount:15000,date:"2025-06-01",ref:"VCH-001"},
+  {type:"salary",emp:"Karim Saheb",month:"June",year:2025,basic:35000,bonus:5000,deduct:0,net:40000,date:"2025-06-30",pay:"Bank Transfer"},
+  {type:"rent",office:"Moulvibazar Office",amount:15000,month:"June",date:"2025-06-01",owner:"Ali Saheb",receipt:"RNT-001"},
+  {type:"tada",emp:"Tanvir Hossain",purpose:"Agent Visit",from:"2025-06-05",to:"2025-06-06",dest:"Dhaka → Sylhet",travel:800,da:1000,hotel:2000,other:200,total:4000,approver:"Karim Saheb"},
+];
+
+let uploadedFiles = [];
+let formFiles = [];
+let editIdx = null;
+let empEditIdx = null;
+let flightEditIdx = null;
+
+// ─── HELPERS ───
+function fmt(n){return Number(n||0).toLocaleString('en-BD')}
+function today(){return new Date().toISOString().split('T')[0]}
+function badgeClass(s){
+  if(!s) return "bgr";
+  if(["Approved","Completed","Active","Arrived","Departed"].some(x=>s.includes(x))) return "bg";
+  if(["Pending","Processing","On Leave","Scheduled","Delayed"].some(x=>s.includes(x))) return "by";
+  if(["Rejected","Unfit","Terminated","Cancelled"].some(x=>s.includes(x))) return "br";
+  return "bb";
+}
+function fileIcon(name){
+  const ext=(name||"").split('.').pop().toLowerCase();
+  return {pdf:"📄",jpg:"🖼️",jpeg:"🖼️",png:"🖼️",doc:"📝",docx:"📝",xlsx:"📊",xls:"📊"}[ext]||"📁";
+}
+function fileSize(b){if(b<1024)return b+"B";if(b<1048576)return(b/1024).toFixed(1)+"KB";return(b/1048576).toFixed(1)+"MB";}
+function flightStatusClass(s){return{Scheduled:"scheduled",Departed:"departed",Arrived:"departed",Cancelled:"cancelled",Delayed:"pending",Boarded:"scheduled"}[s]||"pending";}
+
+function populateSelects(){
+  const wopts='<option value="">-- General --</option>'+workers.map(w=>`<option>${w.name}</option>`).join('');
+  ['inc-worker'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=wopts;});
+  const wnone='<option value="">-- No Worker --</option>'+workers.map(w=>`<option>${w.name}</option>`).join('');
+  ['uploadWorker','fl-worker'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=wnone;});
+  const eopts='<option value="">-- Select Employee --</option>'+employees.map(e=>`<option>${e.name}</option>`).join('');
+  ['sal-emp','ta-emp'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=eopts;});
+}
+
+// ─── NAV ───
+function showPage(name, navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  const titles={dashboard:"Dashboard",form:"New Worker",list:"Worker List",upload:"File Upload",flights:"Flight Management",accounts:"Accounts",employee:"Employees",reports:"Report Generator",coming:"Coming Soon"};
+  document.getElementById('pageTitle').textContent=titles[name]||name;
+  if(name==='dashboard') renderDashboard();
+  if(name==='list') renderList();
+  if(name==='upload'){populateSelects();renderFiles();}
+  if(name==='flights'){populateSelects();renderFlights();}
+  if(name==='accounts'){populateSelects();renderAccSummary();renderAllAccLists();}
+  if(name==='employee'){renderEmployees();}
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('closed');
+  const closed=document.getElementById('sidebar').classList.contains('closed');
+  document.querySelectorAll('.sb-txt,.lbl').forEach(el=>el.style.display=closed?'none':'');
+}
+
+// ─── DASHBOARD ───
+function renderDashboard(){
+  populateSelects();
+  const approved=workers.filter(w=>w.visaStatus==='Approved').length;
+  const pending=workers.filter(w=>['Processing','Pending'].includes(w.visaStatus)).length;
+  const medOk=workers.filter(w=>w.medStatus==='Completed').length;
+  const scheduled=flights.filter(f=>f.status==='Scheduled').length;
+  document.getElementById('kpiGrid').innerHTML=[
+    {l:"Total Workers",v:workers.length,i:"👥",c:"#1a5c2a"},
+    {l:"Visa Approved",v:approved,i:"✅",c:"#1a7a3a"},
+    {l:"In Progress",v:pending,i:"⏳",c:"#c0781a"},
+    {l:"Flights Scheduled",v:scheduled,i:"✈️",c:"#1a5c7a"},
+  ].map(s=>`<div class="kpi-card" style="border-top:3px solid ${s.c}"><div class="kpi-ghost">${s.i}</div><div class="kpi-lbl">${s.l}</div><div class="kpi-val" style="color:${s.c}">${s.v}</div><div class="kpi-sub">↑ Updated live</div></div>`).join('');
+  const bars=[65,78,55,90,70,85,60,95,75,88,72,workers.length*3+30];
+  document.getElementById('barChart').innerHTML=bars.map((h,i)=>`<div class="bar-wrap"><div class="bar" style="height:${Math.min(h*1.1,115)}px;background:${i===11?'#1a5c2a':'linear-gradient(180deg,#2d8a45,#a8d5b0)'}"></div><div class="bar-lbl">${months[i]}</div></div>`).join('');
+  const dc=workers.reduce((a,w)=>{a[w.destination]=(a[w.destination]||0)+1;return a},{});
+  document.getElementById('destChart').innerHTML=Object.entries(dc).map(([d,c])=>`<div class="dest-item"><div class="dest-row"><span>${flags[d]||"🌍"} ${d}</span><span class="dest-cnt">${c}</span></div><div class="prog-track"><div class="prog-fill" style="width:${(c/workers.length)*100}%"></div></div></div>`).join('');
+  document.getElementById('recentTable').innerHTML=buildTable([...workers].reverse().slice(0,5),true);
+}
+
+// ─── WORKER TABLE ───
+function buildTable(list,mini=false){
+  if(!list.length) return `<div class="empty-row">No workers found</div>`;
+  const cols=mini?["#","Name","Destination","Visa","Flight","Action"]:["#","Name","Passport","Company","Post","Destination","Agent","Visa","Medical","Flight","Files","Action"];
+  const rows=list.map((w,i)=>{
+    const ri=workers.indexOf(w);
+    const mc=`<td><div class="worker-name"><div class="avatar">👤</div>${w.name}</div></td><td>${flags[w.destination]||"🌍"} ${w.destination}</td><td><span class="badge ${badgeClass(w.visaStatus)}">${w.visaStatus||"—"}</span></td><td style="color:#777">${w.flightDate||"—"}</td>`;
+    const fc=`<td><div class="worker-name"><div class="avatar">👤</div>${w.name}</div></td><td style="color:#555">${w.passport}</td><td style="color:#333;font-weight:500">${w.company||'—'}</td><td style="color:#555">${w.post||'—'}</td><td>${flags[w.destination]||"🌍"} ${w.destination}</td><td style="color:#555">${w.agent}</td><td><span class="badge ${badgeClass(w.visaStatus)}">${w.visaStatus||"—"}</span></td><td><span class="badge ${badgeClass(w.medStatus)}">${w.medStatus||"—"}</span></td><td style="color:#777">${w.flightDate||"—"}</td><td><span style="font-size:11px;color:var(--g2)">${(w.files||[]).length} 📎</span></td>`;
+    return `<tr><td style="color:#aaa">${i+1}</td>${mini?mc:fc}<td><div class="act-btns"><button class="btn-sm btn-view" onclick="viewWorker(${ri})">👁</button><button class="btn-sm btn-edit" onclick="editWorker(${ri})">✏️</button><button class="btn-sm btn-del" onclick="deleteWorker(${ri})">🗑</button></div></td></tr>`;
+  }).join('');
+  return `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderList(){
+  const dest=document.getElementById('destFilter')?.value||'';
+  const visa=document.getElementById('visaFilter')?.value||'';
+  const q=document.getElementById('searchInput')?.value||'';
+  const f=workers.filter(w=>(!dest||w.destination===dest)&&(!visa||w.visaStatus===visa)&&(!q||w.name.toLowerCase().includes(q.toLowerCase())||w.passport.toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('listCount').textContent=`Worker List (${f.length} records)`;
+  document.getElementById('fullTable').innerHTML=buildTable(f,false);
+}
+function applySearch(){renderList();}
+
+function openForm(){editIdx=null;clearForm();document.getElementById('formTitle').textContent='Register New Worker';showPage('form');}
+function cancelForm(){showPage('list');}
+
+function editWorker(idx){
+  editIdx=idx;const w=workers[idx];
+  document.getElementById('f-name').value=w.name||'';
+  document.getElementById('f-passport').value=w.passport||'';
+  document.getElementById('f-phone').value=w.phone||'';
+  document.getElementById('f-addr').value=w.address||'';
+  document.getElementById('f-note').value=w.note||'';
+  document.getElementById('f-flight').value=w.flightDate||'';
+  document.getElementById('f-company').value=w.company||'';
+  document.getElementById('f-post').value=w.post||'';
+  document.getElementById('f-dest').value=w.destination||'';
+  document.getElementById('f-agent').value=w.agent||'';
+  document.getElementById('f-visa').value=w.visaStatus||'';
+  document.getElementById('f-med').value=w.medStatus||'';
+  formFiles=w.files||[];renderFormFileList();
+  document.getElementById('formTitle').textContent='Edit Worker';
+  showPage('form');
+}
+
+function clearForm(){
+  ['f-name','f-passport','f-phone','f-flight','f-addr','f-note','f-company','f-post'].forEach(id=>document.getElementById(id).value='');
+  ['f-dest','f-agent','f-visa','f-med'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  formFiles=[];renderFormFileList();
+}
+
+async function saveWorker(){
+  const name=document.getElementById('f-name').value.trim();
+  const passport=document.getElementById('f-passport').value.trim();
+  if(!name||!passport){alert('Name and passport number are required!');return;}
+  const w={name,passport,destination:document.getElementById('f-dest').value,agent:document.getElementById('f-agent').value,visaStatus:document.getElementById('f-visa').value,medStatus:document.getElementById('f-med').value,flightDate:document.getElementById('f-flight').value,phone:document.getElementById('f-phone').value,address:document.getElementById('f-addr').value,note:document.getElementById('f-note').value,company:document.getElementById('f-company').value,post:document.getElementById('f-post').value,files:[...formFiles]};
+  if(editIdx!==null){workers[editIdx]=w;editIdx=null;}else{workers.push(w);}
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.textContent='⏳ Saving...';
+  try{
+    const csv="Name,Passport,Destination,Agent,Visa,Medical,Flight,Phone,Address,Company,Post,Note\n"+workers.map(r=>[r.name,r.passport,r.destination,r.agent,r.visaStatus,r.medStatus,r.flightDate,r.phone,r.address,r.company||'',r.post||'',r.note].join(",")).join("\n");
+    await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:`Update Google Sheet "${SHEET_ID}" with CSV:\n${csv}`}],mcp_servers:[{type:"url",url:"https://drivemcp.googleapis.com/mcp/v1",name:"google-drive"}]})});
+  }catch(e){console.error(e);}
+  btn.disabled=false;btn.textContent='💾 Save & Sync to Google Sheets';
+  document.getElementById('savedBadge').style.display='inline-block';
+  setTimeout(()=>document.getElementById('savedBadge').style.display='none',2000);
+  clearForm();showPage('list');renderList();
+}
+
+function deleteWorker(idx){if(confirm('Delete this worker?')){workers.splice(idx,1);renderList();renderDashboard();}}
+
+function viewWorker(idx){
+  const w=workers[idx];
+  const fields=[["Name","name"],["Passport","passport"],["Company","company"],["Post / Position","post"],["Destination","destination"],["Agent","agent"],["Visa Status","visaStatus"],["Medical","medStatus"],["Flight Date","flightDate"],["Phone","phone"],["Address","address"],["Notes","note"]];
+  let html='<div class="detail-grid">'+fields.map(([l,k])=>`<div class="detail-item"><div class="detail-lbl">${l}</div><div class="detail-val">${w[k]||'—'}</div></div>`).join('')+'</div>';
+  if((w.files||[]).length) html+=`<div style="margin-top:12px"><div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">Attached Files</div><div style="display:flex;gap:6px;flex-wrap:wrap">${w.files.map(f=>`<span style="background:#f0f7f1;border:1px solid #c8e6cc;padding:3px 8px;border-radius:5px;font-size:11px">${fileIcon(f.name)} ${f.name}</span>`).join('')}</div></div>`;
+  document.getElementById('modalTitle').textContent='Worker Details';
+  document.getElementById('modalContent').innerHTML=html;
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+// ─── FILES ───
+function handleFormFiles(e){[...e.target.files].forEach(f=>formFiles.push({name:f.name,size:f.size,date:today()}));renderFormFileList();}
+function removeFormFile(i){formFiles.splice(i,1);renderFormFileList();}
+function renderFormFileList(){document.getElementById('formFileList').innerHTML=formFiles.map((f,i)=>`<div class="file-item"><span class="file-item-icon">${fileIcon(f.name)}</span><span class="file-item-name">${f.name}</span><span class="file-item-size">${fileSize(f.size)}</span><button class="file-item-del" onclick="removeFormFile(${i})">✕</button></div>`).join('');}
+
+function handleMainFiles(e){
+  const cat=document.getElementById('uploadCat').value;
+  const worker=document.getElementById('uploadWorker').value;
+  const note=document.getElementById('uploadNote').value;
+  [...e.target.files].forEach(f=>uploadedFiles.push({name:f.name,size:f.size,cat,worker,note,date:today()}));
+  renderMainFileList();
+}
+function removeMainFile(i){uploadedFiles.splice(i,1);renderMainFileList();renderFiles();}
+function renderMainFileList(){document.getElementById('mainFileList').innerHTML=uploadedFiles.filter(f=>!f.uploaded).map((f,i)=>`<div class="file-item"><span class="file-item-icon">${fileIcon(f.name)}</span><span class="file-item-name">${f.name}</span><span class="file-item-size">${fileSize(f.size)}</span><button class="file-item-del" onclick="removeMainFile(${i})">✕</button></div>`).join('');}
+
+async function uploadFiles(){
+  const pending=uploadedFiles.filter(f=>!f.uploaded);
+  if(!pending.length){alert('No files selected!');return;}
+  pending.forEach(f=>f.uploaded=true);
+  renderFiles();renderMainFileList();
+  alert(`✅ ${pending.length} file(s) uploaded successfully!`);
+}
+function clearUpload(){uploadedFiles=uploadedFiles.filter(f=>f.uploaded);document.getElementById('mainFileInput').value='';renderMainFileList();}
+
+const catLabels={passport:"🛂 Passport",visa:"🏷️ Visa",medical:"🏥 Medical",contract:"📝 Contract",invoice:"🧾 Invoice",salary:"💰 Salary",flight:"✈️ Flight",other:"📂 Other"};
+function renderFiles(){
+  const filter=document.getElementById('fileFilter')?.value||'';
+  const list=uploadedFiles.filter(f=>f.uploaded&&(!filter||f.cat===filter));
+  document.getElementById('fileLibrary').innerHTML=list.length?list.map(f=>`<div class="ledger-row"><span style="font-size:20px">${fileIcon(f.name)}</span><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div><div style="font-size:10px;color:#888">${catLabels[f.cat]||f.cat}${f.worker?' · '+f.worker:''}</div></div><div style="font-size:11px;color:#999">${fileSize(f.size)}</div><div style="font-size:11px;color:#999;margin-left:8px">${f.date}</div></div>`).join(''):`<div class="empty-row">No files uploaded yet</div>`;}
+
+// ─── FLIGHTS ───
+function saveFlight(){
+  const worker=document.getElementById('fl-worker').value;
+  const number=document.getElementById('fl-number').value.trim();
+  if(!worker||!number){alert('Worker and flight number are required!');return;}
+  const f={worker,number,origin:document.getElementById('fl-origin').value,destination:document.getElementById('fl-dest').value,date:document.getElementById('fl-date').value,time:document.getElementById('fl-time').value,airline:document.getElementById('fl-airline').value,price:Number(document.getElementById('fl-price').value||0),seat:document.getElementById('fl-seat').value,status:document.getElementById('fl-status').value,note:document.getElementById('fl-note').value};
+  if(flightEditIdx!==null){flights[flightEditIdx]=f;flightEditIdx=null;}else{flights.push(f);}
+  clearFlightForm();renderFlights();renderDashboard();
+}
+function clearFlightForm(){
+  ['fl-number','fl-origin','fl-time','fl-seat','fl-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fl-price').value='';
+  document.getElementById('fl-date').value=today();
+  ['fl-worker','fl-dest','fl-airline','fl-status'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  flightEditIdx=null;document.getElementById('flightFormTitle').textContent='Add New Flight';document.getElementById('flightSaveBtn').textContent='✈️ Save Flight';
+}
+function editFlight(i){
+  flightEditIdx=i;const f=flights[i];
+  document.getElementById('fl-worker').value=f.worker||'';
+  document.getElementById('fl-number').value=f.number||'';
+  document.getElementById('fl-origin').value=f.origin||'';
+  document.getElementById('fl-dest').value=f.destination||'';
+  document.getElementById('fl-date').value=f.date||'';
+  document.getElementById('fl-time').value=f.time||'';
+  document.getElementById('fl-airline').value=f.airline||'';
+  document.getElementById('fl-price').value=f.price||'';
+  document.getElementById('fl-seat').value=f.seat||'';
+  document.getElementById('fl-status').value=f.status||'';
+  document.getElementById('fl-note').value=f.note||'';
+  document.getElementById('flightFormTitle').textContent='Edit Flight';
+  document.getElementById('flightSaveBtn').textContent='✅ Update Flight';
+}
+function deleteFlight(i){if(confirm('Delete this flight?')){flights.splice(i,1);renderFlights();renderDashboard();}}
+function renderFlights(){
+  const filter=document.getElementById('flightFilter')?.value||'';
+  const list=filter?flights.filter(f=>f.status===filter):flights;
+  document.getElementById('flightCount').textContent=list.length;
+  document.getElementById('flightList').innerHTML=list.length?list.map((f,i)=>{
+    const ri=flights.indexOf(f);
+    return `<div class="flight-card ${flightStatusClass(f.status)}">
+      <div class="flight-route">
+        <span class="flight-city">${f.origin||'DAC'}</span>
+        <span class="flight-arrow">→</span>
+        <span class="flight-city">${f.destination||'—'}</span>
+        <span style="margin-left:auto"><span class="badge ${badgeClass(f.status)}">${f.status}</span></span>
+      </div>
+      <div class="flight-meta">
+        <span>👤 ${f.worker}</span>
+        <span>✈️ ${f.number}</span>
+        <span>🛫 ${f.airline||'—'}</span>
+        <span>📅 ${f.date||'—'} ${f.time?'@ '+f.time:''}</span>
+        <span>💺 ${f.seat||'—'}</span>
+        <span>💰 BDT ${fmt(f.price)}</span>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:8px">
+        <button class="btn-sm btn-edit" onclick="editFlight(${ri})">✏️ Edit</button>
+        <button class="btn-sm btn-del" onclick="deleteFlight(${ri})">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join(''):`<div class="empty-row">No flights found</div>`;}
+
+// ─── ACCOUNTS ───
+function accTab(name,el){
+  document.querySelectorAll('.acc-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.acc-section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');document.getElementById('acc-'+name).classList.add('active');
+  if(name==='ledger') renderLedger();
+}
+function calcSalary(){const b=Number(document.getElementById('sal-basic')?.value||0),bo=Number(document.getElementById('sal-bonus')?.value||0),d=Number(document.getElementById('sal-deduct')?.value||0),el=document.getElementById('sal-net');if(el)el.value=b+bo-d;}
+function calcTA(){const t=Number(document.getElementById('ta-travel')?.value||0),d=Number(document.getElementById('ta-da')?.value||0),h=Number(document.getElementById('ta-hotel')?.value||0),o=Number(document.getElementById('ta-other')?.value||0),el=document.getElementById('ta-total');if(el)el.value=t+d+h+o;}
+
+function addEntry(type){
+  let entry={type,date:today()};
+  if(type==='income'){const a=Number(document.getElementById('inc-amount').value);if(!a){alert('Enter amount!');return;}entry={...entry,cat:document.getElementById('inc-type').value,desc:document.getElementById('inc-desc').value,amount:a,ref:document.getElementById('inc-ref').value,worker:document.getElementById('inc-worker').value,date:document.getElementById('inc-date').value||today()};['inc-amount','inc-desc','inc-ref'].forEach(id=>document.getElementById(id).value='');}
+  else if(type==='expense'){const a=Number(document.getElementById('exp-amount').value);if(!a){alert('Enter amount!');return;}entry={...entry,cat:document.getElementById('exp-type').value,desc:document.getElementById('exp-desc').value,amount:a,pay:document.getElementById('exp-pay').value,voucher:document.getElementById('exp-voucher').value,date:document.getElementById('exp-date').value||today()};['exp-amount','exp-desc','exp-voucher'].forEach(id=>document.getElementById(id).value='');}
+  else if(type==='salary'){const emp=document.getElementById('sal-emp').value;if(!emp){alert('Select employee!');return;}const b=Number(document.getElementById('sal-basic').value||0),bo=Number(document.getElementById('sal-bonus').value||0),d=Number(document.getElementById('sal-deduct').value||0);entry={...entry,emp,month:document.getElementById('sal-month').value,year:document.getElementById('sal-year').value,basic:b,bonus:bo,deduct:d,net:b+bo-d,date:document.getElementById('sal-date').value||today(),pay:document.getElementById('sal-pay').value};['sal-basic','sal-bonus','sal-deduct','sal-net'].forEach(id=>document.getElementById(id).value='');}
+  else if(type==='rent'){const a=Number(document.getElementById('rent-amount').value);if(!a){alert('Enter amount!');return;}entry={...entry,office:document.getElementById('rent-office').value,amount:a,month:document.getElementById('rent-month').value,date:document.getElementById('rent-date').value||today(),owner:document.getElementById('rent-owner').value,receipt:document.getElementById('rent-receipt').value};['rent-amount','rent-owner','rent-receipt'].forEach(id=>document.getElementById(id).value='');}
+  else if(type==='tada'){const emp=document.getElementById('ta-emp').value;if(!emp){alert('Select employee!');return;}const tv=Number(document.getElementById('ta-travel').value||0),da=Number(document.getElementById('ta-da').value||0),h=Number(document.getElementById('ta-hotel').value||0),o=Number(document.getElementById('ta-other').value||0);entry={...entry,emp,purpose:document.getElementById('ta-purpose').value,from:document.getElementById('ta-from').value,to:document.getElementById('ta-to').value,dest:document.getElementById('ta-dest').value,travel:tv,da,hotel:h,other:o,total:tv+da+h+o,approver:document.getElementById('ta-approver').value};['ta-purpose','ta-dest','ta-approver'].forEach(id=>document.getElementById(id).value='');['ta-travel','ta-da','ta-hotel','ta-other','ta-total'].forEach(id=>document.getElementById(id).value='');}
+  accEntries.unshift(entry);renderAccSummary();renderAllAccLists();
+}
+function deleteEntry(i){if(confirm('Delete this entry?')){accEntries.splice(i,1);renderAccSummary();renderAllAccLists();}}
+
+function renderAccSummary(){
+  const tI=accEntries.filter(e=>e.type==='income').reduce((s,e)=>s+(e.amount||0),0);
+  const tS=accEntries.filter(e=>e.type==='salary').reduce((s,e)=>s+(e.net||0),0);
+  const tR=accEntries.filter(e=>e.type==='rent').reduce((s,e)=>s+(e.amount||0),0);
+  const tT=accEntries.filter(e=>e.type==='tada').reduce((s,e)=>s+(e.total||0),0);
+  const tE=accEntries.filter(e=>e.type==='expense').reduce((s,e)=>s+(e.amount||0),0);
+  const np=tI-tS-tR-tT-tE;
+  document.getElementById('accSummary').innerHTML=[
+    {l:"Total Income",v:"BDT "+fmt(tI),cls:""},
+    {l:"Salary Paid",v:"BDT "+fmt(tS),cls:"red"},
+    {l:"Office Rent",v:"BDT "+fmt(tR),cls:"blue"},
+    {l:"TA/DA",v:"BDT "+fmt(tT),cls:"orange"},
+    {l:"Other Expenses",v:"BDT "+fmt(tE),cls:"purple"},
+    {l:"Net Profit",v:"BDT "+fmt(np),cls:np>=0?"":"red"},
+  ].map(c=>`<div class="exp-card ${c.cls}"><div class="exp-lbl">${c.l}</div><div class="exp-val">${c.v}</div></div>`).join('');
+}
+
+function renderEntryTable(entries,cols){
+  if(!entries.length) return `<div class="empty-row">No records found</div>`;
+  return `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${entries.map((e,i)=>{const ri=accEntries.indexOf(e);return`<tr><td style="color:#aaa">${i+1}</td>${renderEntryRow(e)}<td><button class="btn-sm btn-del" onclick="deleteEntry(${ri})">🗑</button></td></tr>`;}).join('')}</tbody></table>`;
+}
+function renderEntryRow(e){
+  if(e.type==='income') return `<td>${e.cat}</td><td>${e.desc||'—'}</td><td style="color:#888">${e.worker||'—'}</td><td><span class="badge bg">+BDT ${fmt(e.amount)}</span></td><td style="color:#999">${e.date}</td><td style="color:#888">${e.ref||'—'}</td>`;
+  if(e.type==='expense') return `<td>${e.cat}</td><td>${e.desc||'—'}</td><td style="color:#888">${e.pay}</td><td><span class="badge br">-BDT ${fmt(e.amount)}</span></td><td style="color:#999">${e.date}</td><td style="color:#888">${e.voucher||'—'}</td>`;
+  if(e.type==='salary') return `<td>${e.emp}</td><td>${e.month} ${e.year}</td><td>BDT ${fmt(e.basic)}</td><td style="color:#27ae60">+${fmt(e.bonus)}</td><td style="color:#c0392b">-${fmt(e.deduct)}</td><td><span class="badge bg">BDT ${fmt(e.net)}</span></td><td style="color:#999">${e.date}</td>`;
+  if(e.type==='rent') return `<td>${e.office}</td><td>${e.month}</td><td style="color:#c0392b">BDT ${fmt(e.amount)}</td><td style="color:#888">${e.owner||'—'}</td><td style="color:#888">${e.receipt||'—'}</td><td style="color:#999">${e.date}</td>`;
+  if(e.type==='tada') return `<td>${e.emp}</td><td>${e.purpose||'—'}</td><td>${e.dest||'—'}</td><td style="color:#888">${e.from||'—'}</td><td><span class="badge br">BDT ${fmt(e.total)}</span></td><td style="color:#888">${e.approver||'—'}</td>`;
+  return '';
+}
+function renderAllAccLists(){
+  document.getElementById('incomeList').innerHTML=renderEntryTable(accEntries.filter(e=>e.type==='income'),["#","Type","Description","Worker","Amount","Date","Ref","Action"]);
+  document.getElementById('expenseList').innerHTML=renderEntryTable(accEntries.filter(e=>e.type==='expense'),["#","Type","Description","Payment","Amount","Date","Voucher","Action"]);
+  document.getElementById('salaryList').innerHTML=renderEntryTable(accEntries.filter(e=>e.type==='salary'),["#","Employee","Month","Basic","Bonus","Deduction","Net","Date","Action"]);
+  document.getElementById('rentList').innerHTML=renderEntryTable(accEntries.filter(e=>e.type==='rent'),["#","Office","Month","Amount","Landlord","Receipt","Date","Action"]);
+  document.getElementById('tadaList').innerHTML=renderEntryTable(accEntries.filter(e=>e.type==='tada'),["#","Employee","Purpose","Route","From","Total","Approved By","Action"]);
+  renderLedger();
+}
+function renderLedger(){
+  const filter=document.getElementById('ledgerFilter')?.value||'';
+  const list=filter?accEntries.filter(e=>e.type===filter):[...accEntries];
+  const icons={income:"💰",expense:"💸",salary:"👔",rent:"🏢",tada:"✈️"};
+  const labels={income:"Income",expense:"Expense",salary:"Salary",rent:"Rent",tada:"TA/DA"};
+  document.getElementById('ledgerTable').innerHTML=list.length?list.map(e=>{const isInc=e.type==='income';const amt=e.amount||e.net||e.total||0;const desc=e.desc||e.purpose||e.office||'—';const sub=e.cat||e.emp||e.worker||'';return`<div class="ledger-row"><div class="ledger-type ${isInc?'ledger-income':'ledger-expense'}">${icons[e.type]||'📋'}</div><div style="flex:1"><div class="ledger-desc">${desc}</div><div class="ledger-cat">${labels[e.type]||e.type}${sub?' · '+sub:''}</div></div><div class="ledger-date">${e.date||'—'}</div><div class="ledger-amount ${isInc?'inc':'exp'}">${isInc?'+':'-'}BDT ${fmt(amt)}</div></div>`}).join(''):`<div class="empty-row">No entries found</div>`;}
+
+// ─── EMPLOYEE ───
+function saveEmployee(){
+  const name=document.getElementById('emp-name').value.trim();
+  const role=document.getElementById('emp-role').value.trim();
+  if(!name||!role){alert('Name and designation are required!');return;}
+  const e={name,role,phone:document.getElementById('emp-phone').value,email:document.getElementById('emp-email').value,salary:Number(document.getElementById('emp-salary').value||0),join:document.getElementById('emp-join').value,dept:document.getElementById('emp-dept').value,status:document.getElementById('emp-status').value,address:document.getElementById('emp-addr').value};
+  if(empEditIdx!==null){employees[empEditIdx]=e;empEditIdx=null;}else{employees.push(e);}
+  populateSelects();clearEmpForm();renderEmployees();
+}
+function clearEmpForm(){['emp-name','emp-role','emp-phone','emp-email','emp-salary','emp-join','emp-addr'].forEach(id=>document.getElementById(id).value='');['emp-dept','emp-status'].forEach(id=>document.getElementById(id).selectedIndex=0);empEditIdx=null;document.getElementById('empFormTitle').textContent='Add New Employee';document.getElementById('empSaveBtn').textContent='💾 Save Employee';}
+function editEmployee(i){empEditIdx=i;const e=employees[i];document.getElementById('emp-name').value=e.name||'';document.getElementById('emp-role').value=e.role||'';document.getElementById('emp-phone').value=e.phone||'';document.getElementById('emp-email').value=e.email||'';document.getElementById('emp-salary').value=e.salary||'';document.getElementById('emp-join').value=e.join||'';document.getElementById('emp-dept').value=e.dept||'';document.getElementById('emp-status').value=e.status||'';document.getElementById('emp-addr').value=e.address||'';document.getElementById('empFormTitle').textContent='Edit Employee';document.getElementById('empSaveBtn').textContent='✅ Update';}
+function deleteEmployee(i){if(confirm('Delete this employee?')){employees.splice(i,1);populateSelects();renderEmployees();}}
+function renderEmployees(){
+  document.getElementById('empCount').textContent=employees.length;
+  document.getElementById('empList').innerHTML=employees.length?employees.map((e,i)=>`<div class="emp-card"><div class="emp-avatar">👤</div><div class="emp-info"><div class="emp-name">${e.name}</div><div class="emp-role">${e.role} · ${e.dept}</div><div style="font-size:11px;color:#888;margin-top:2px">${e.phone||''}${e.email?' · '+e.email:''}</div></div><div style="text-align:right"><div style="font-weight:700;color:var(--g2);font-size:13px">BDT ${fmt(e.salary)}/mo</div><span class="badge ${badgeClass(e.status)}" style="margin-top:4px;display:inline-block">${e.status}</span></div><div style="display:flex;flex-direction:column;gap:4px;margin-left:8px"><button class="btn-sm btn-edit" onclick="editEmployee(${i})">✏️</button><button class="btn-sm btn-del" onclick="deleteEmployee(${i})">🗑</button></div></div>`).join(''):`<div class="empty-row">No employees added</div>`;}
+
+// ─── REPORTS ───
+function generateReport(type){
+  const month=document.getElementById('reportMonth').value;
+  const year=document.getElementById('reportYear').value;
+  const period=month?`${month} ${year}`:year;
+  let html='';const ts=Date.now();
+
+  if(type==='workers'){
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Worker Summary Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      ${[{l:"Total Workers",v:workers.length},{l:"Visa Approved",v:workers.filter(w=>w.visaStatus==='Approved').length},{l:"Medical Done",v:workers.filter(w=>w.medStatus==='Completed').length},{l:"Pending",v:workers.filter(w=>w.visaStatus==='Pending'||w.visaStatus==='Processing').length}].map(s=>`<div style="background:#f0f7f1;border-radius:8px;padding:12px;text-align:center"><div style="font-size:11px;color:#888">${s.l}</div><div style="font-size:22px;font-weight:800;color:var(--g2)">${s.v}</div></div>`).join('')}
+    </div>
+    <table><thead><tr><th>#</th><th>Name</th><th>Passport</th><th>Company</th><th>Post</th><th>Destination</th><th>Visa</th><th>Medical</th><th>Flight Date</th></tr></thead><tbody>
+    ${workers.map((w,i)=>`<tr><td style="color:#aaa">${i+1}</td><td><b>${w.name}</b></td><td>${w.passport}</td><td>${w.company||'—'}</td><td>${w.post||'—'}</td><td>${flags[w.destination]||'🌍'} ${w.destination}</td><td><span class="badge ${badgeClass(w.visaStatus)}">${w.visaStatus||'—'}</span></td><td><span class="badge ${badgeClass(w.medStatus)}">${w.medStatus||'—'}</span></td><td>${w.flightDate||'—'}</td></tr>`).join('')}
+    </tbody></table>`;
+  }
+  else if(type==='flights'){
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Flight Schedule Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Worker</th><th>Flight No.</th><th>Route</th><th>Airline</th><th>Date</th><th>Time</th><th>Seat</th><th>Ticket (BDT)</th><th>Status</th></tr></thead><tbody>
+    ${flights.map((f,i)=>`<tr><td style="color:#aaa">${i+1}</td><td><b>${f.worker}</b></td><td>${f.number}</td><td>${f.origin||'—'} → ${f.destination||'—'}</td><td>${f.airline||'—'}</td><td>${f.date||'—'}</td><td>${f.time||'—'}</td><td>${f.seat||'—'}</td><td>BDT ${fmt(f.price)}</td><td><span class="badge ${badgeClass(f.status)}">${f.status}</span></td></tr>`).join('')}
+    </tbody></table>
+    <div style="margin-top:12px;text-align:right;font-size:13px;font-weight:600;color:var(--g2)">Total Ticket Cost: BDT ${fmt(flights.reduce((s,f)=>s+(f.price||0),0))}</div>`;
+  }
+  else if(type==='income'){
+    const inc=accEntries.filter(e=>e.type==='income');
+    const total=inc.reduce((s,e)=>s+(e.amount||0),0);
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Income & Revenue Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Type</th><th>Description</th><th>Worker</th><th>Amount (BDT)</th><th>Date</th><th>Reference</th></tr></thead><tbody>
+    ${inc.map((e,i)=>`<tr><td style="color:#aaa">${i+1}</td><td>${e.cat}</td><td>${e.desc||'—'}</td><td>${e.worker||'—'}</td><td><b style="color:#155724">+BDT ${fmt(e.amount)}</b></td><td>${e.date}</td><td>${e.ref||'—'}</td></tr>`).join('')}
+    </tbody></table><div style="margin-top:12px;text-align:right;font-size:14px;font-weight:700;color:var(--g2)">Total Income: BDT ${fmt(total)}</div>`;
+  }
+  else if(type==='expense'){
+    const exp=accEntries.filter(e=>e.type==='expense');
+    const total=exp.reduce((s,e)=>s+(e.amount||0),0);
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Expense Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Type</th><th>Description</th><th>Payment</th><th>Amount (BDT)</th><th>Date</th><th>Voucher</th></tr></thead><tbody>
+    ${exp.map((e,i)=>`<tr><td style="color:#aaa">${i+1}</td><td>${e.cat}</td><td>${e.desc||'—'}</td><td>${e.pay||'—'}</td><td><b style="color:#721c24">-BDT ${fmt(e.amount)}</b></td><td>${e.date}</td><td>${e.voucher||'—'}</td></tr>`).join('')}
+    </tbody></table><div style="margin-top:12px;text-align:right;font-size:14px;font-weight:700;color:#c0392b">Total Expenses: BDT ${fmt(total)}</div>`;
+  }
+  else if(type==='salary'){
+    const sal=accEntries.filter(e=>e.type==='salary');
+    const total=sal.reduce((s,e)=>s+(e.net||0),0);
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Salary Disbursement Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Employee</th><th>Month</th><th>Basic</th><th>Bonus</th><th>Deduction</th><th>Net Salary</th><th>Method</th><th>Date</th></tr></thead><tbody>
+    ${sal.map((e,i)=>`<tr><td style="color:#aaa">${i+1}</td><td><b>${e.emp}</b></td><td>${e.month} ${e.year}</td><td>BDT ${fmt(e.basic)}</td><td style="color:#27ae60">+${fmt(e.bonus)}</td><td style="color:#c0392b">-${fmt(e.deduct)}</td><td><b style="color:var(--g2)">BDT ${fmt(e.net)}</b></td><td>${e.pay||'—'}</td><td>${e.date}</td></tr>`).join('')}
+    </tbody></table><div style="margin-top:12px;text-align:right;font-size:14px;font-weight:700;color:var(--g2)">Total Disbursed: BDT ${fmt(total)}</div>`;
+  }
+  else if(type==='tada'){
+    const ta=accEntries.filter(e=>e.type==='tada');
+    const total=ta.reduce((s,e)=>s+(e.total||0),0);
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">TA/DA Expense Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Employee</th><th>Purpose</th><th>Route</th><th>Transport</th><th>DA</th><th>Hotel</th><th>Other</th><th>Total</th><th>Approved By</th></tr></thead><tbody>
+    ${ta.map((e,i)=>`<tr><td style="color:#aaa">${i+1}</td><td><b>${e.emp}</b></td><td>${e.purpose||'—'}</td><td>${e.dest||'—'}</td><td>${fmt(e.travel)}</td><td>${fmt(e.da)}</td><td>${fmt(e.hotel)}</td><td>${fmt(e.other)}</td><td><b style="color:#c0392b">BDT ${fmt(e.total)}</b></td><td>${e.approver||'—'}</td></tr>`).join('')}
+    </tbody></table><div style="margin-top:12px;text-align:right;font-size:14px;font-weight:700;color:#c0392b">Total TA/DA: BDT ${fmt(total)}</div>`;
+  }
+  else if(type==='pnl'){
+    const tI=accEntries.filter(e=>e.type==='income').reduce((s,e)=>s+(e.amount||0),0);
+    const tS=accEntries.filter(e=>e.type==='salary').reduce((s,e)=>s+(e.net||0),0);
+    const tR=accEntries.filter(e=>e.type==='rent').reduce((s,e)=>s+(e.amount||0),0);
+    const tT=accEntries.filter(e=>e.type==='tada').reduce((s,e)=>s+(e.total||0),0);
+    const tE=accEntries.filter(e=>e.type==='expense').reduce((s,e)=>s+(e.amount||0),0);
+    const np=tI-tS-tR-tT-tE;
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Profit & Loss Statement — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>Category</th><th>Amount (BDT)</th><th>% of Income</th></tr></thead><tbody>
+    <tr style="background:#f0f7f1"><td><b>Total Income</b></td><td><b style="color:var(--g2)">BDT ${fmt(tI)}</b></td><td>100%</td></tr>
+    <tr><td>— Salary Expense</td><td style="color:#c0392b">BDT ${fmt(tS)}</td><td>${tI?((tS/tI)*100).toFixed(1):'0'}%</td></tr>
+    <tr><td>— Office Rent</td><td style="color:#c0392b">BDT ${fmt(tR)}</td><td>${tI?((tR/tI)*100).toFixed(1):'0'}%</td></tr>
+    <tr><td>— TA/DA</td><td style="color:#c0392b">BDT ${fmt(tT)}</td><td>${tI?((tT/tI)*100).toFixed(1):'0'}%</td></tr>
+    <tr><td>— Other Expenses</td><td style="color:#c0392b">BDT ${fmt(tE)}</td><td>${tI?((tE/tI)*100).toFixed(1):'0'}%</td></tr>
+    <tr style="background:${np>=0?'#f0f7f1':'#fdecea'}"><td><b>Net Profit / Loss</b></td><td><b style="color:${np>=0?'var(--g2)':'#c0392b'}">BDT ${fmt(np)}</b></td><td>${tI?((np/tI)*100).toFixed(1):'0'}%</td></tr>
+    </tbody></table>`;
+  }
+  else if(type==='destination'){
+    const dc=workers.reduce((a,w)=>{if(!a[w.destination])a[w.destination]={total:0,approved:0,pending:0,completed:0};a[w.destination].total++;if(w.visaStatus==='Approved')a[w.destination].approved++;if(w.visaStatus==='Pending'||w.visaStatus==='Processing')a[w.destination].pending++;if(w.medStatus==='Completed')a[w.destination].completed++;return a},{});
+    html=`<div class="tbl-hdr"><div style="font-weight:700;color:var(--g2);font-size:14px">Destination-wise Worker Report — ${period}</div><button class="btn btn-g no-print" onclick="window.print()">🖨️ Print</button></div>
+    <table><thead><tr><th>#</th><th>Destination</th><th>Total Workers</th><th>Visa Approved</th><th>Pending</th><th>Medical Done</th></tr></thead><tbody>
+    ${Object.entries(dc).map(([d,v],i)=>`<tr><td style="color:#aaa">${i+1}</td><td>${flags[d]||'🌍'} <b>${d}</b></td><td>${v.total}</td><td><span class="badge bg">${v.approved}</span></td><td><span class="badge by">${v.pending}</span></td><td><span class="badge bb">${v.completed}</span></td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  document.getElementById('reportOutput').style.display='block';
+  document.getElementById('reportContent').innerHTML=html;
+  document.getElementById('reportOutput').scrollIntoView({behavior:'smooth'});
+}
+
+// ─── INIT ───
+populateSelects();
+renderDashboard();
+renderEmployees();
+document.querySelectorAll('input[type=date]').forEach(el=>{if(!el.value)el.value=today();});
+
+// ─── PWA: Register Service Worker ───
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(r=>console.log('GCP SW registered'))
+      .catch(e=>console.log('SW error:',e));
+  });
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault(); deferredPrompt=e;
+  const btn=document.getElementById('installBtn');
+  if(btn) btn.style.display='flex';
+});
+window.addEventListener('appinstalled',()=>{
+  const btn=document.getElementById('installBtn');
+  if(btn) btn.style.display='none';
+  deferredPrompt=null;
+});
+function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{
+      deferredPrompt=null;
+      const btn=document.getElementById('installBtn');
+      if(btn) btn.style.display='none';
+    });
+  }
+}
+</script>
+</body>
+</html>
